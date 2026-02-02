@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seaquest"
+version = "0.0.1"
+authors = [
+  { name="Iancu Onescu", email="onescu.iancu@gmail.com" },
+]
+description = "Python package that facilitates ML model training and inference on Nautilus platform and other kubernetes clusters."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "kubernetes>=34.1.0",
+  "PyYAML>=5.4.1",
+  # "setuptools>=80.9.0",
+  "setuptools>=56.2.0",
+  "cerberus>=1.3.7"
+]
+keywords = ["python", "nautilus", "kubernetes", "ML", "machine learning", "deep learning", "AI", "artificial intelligence", "training", "inference", "GPU", "TPU", "cloud computing"]
+
+[project.urls]
+Homepage = "https://github.com/IancuOnescu/seaQuest"
+Issues = "https://github.com/IancuOnescu/seaQuest/issues"

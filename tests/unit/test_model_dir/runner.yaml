@@ -1,0 +1,16 @@
+md_dir: test_model_dir
+model_name: ExampleModel
+model_fun: train
+prefix: iones
+data_file: test_weights.txt
+job_spec:
+  resources:
+    limits:
+      memory: 64G
+      cpu: 2
+    requests:
+      memory: 64G
+      cpu: 2
+output_dir: /ionestest-test-pvc/iones-seaquest-test-job_output
+model_keyword_args:
+  test_arg: "this is a test"

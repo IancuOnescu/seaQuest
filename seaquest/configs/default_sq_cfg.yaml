@@ -1,0 +1,11 @@
+job-spec:
+  resources:
+    limits:
+      memory: 64G
+      cpu: 2
+      nvidia.com/gpu: 1
+    requests:
+      memory: 64G
+      cpu: 2
+      nvidia.com/gpu: 1
+  graphics-card: NVIDIA-A10
