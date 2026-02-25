@@ -104,10 +104,10 @@ def _launch_job(api_instance: client.BatchV1Api, namespace: str, job_name:str, j
     logger.info("Succesfully launched job {job}!".format(job=job_name))
 
 
-def create_jobs(api_instance: client.BatchV1Api, num_jobs: int, namespace: str, job_config: dict, prefix: str, model_name:str, model_fun: str, pvc: str, model_dir: str, data_file: str) -> list:
+def create_jobs(api_instance: client.BatchV1Api, num_jobs: int, namespace: str, job_config: dict, prefix: str, suffix: str, model_name:str, model_fun: str, pvc: str, model_dir: str, data_file: str) -> list:
     all_created_jobs = []
     for idx in range(num_jobs):
-        job_name = "{prefix}-{model}-{fun}-{data_file}-job-{idx}".format(prefix=prefix, model=model_name, fun=model_fun, idx=idx, data_file=data_file)
+        job_name = "{prefix}-{model}-{fun}-{data_file}-job-{suffix}-{idx}".format(prefix=prefix, model=model_name, fun=model_fun[:3], idx=idx, data_file=data_file, suffix=suffix)
         job_name = job_name.lower() # kube convention
 
         arguments = {

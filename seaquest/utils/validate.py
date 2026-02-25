@@ -96,6 +96,7 @@ def _parse_args(argv) -> dict:
      parser.add_argument("-mn", "--model-name", action="store", dest="model_name", required=False, type=str, help="Name of the model")
      parser.add_argument("-f", "--model-function", action="store", dest="model_fun", required=False, type=str, help="Name of the model function to run", choices=['train', 'infer'])
      parser.add_argument("-p", "--prefix", action="store", dest="prefix", required=False, type=str, help="Prefix to use for naming jobs and other k8s objects")
+     parser.add_argument("-s", "--suffix", action="store", dest="suffix", required=False, type=str, help="Suffix to use for naming jobs and other k8s objects")
 
      cmd_args, _ = parser.parse_known_args(argv)
      config_args = _parse_config_file(pathlib.Path(cmd_args.config_file).resolve())

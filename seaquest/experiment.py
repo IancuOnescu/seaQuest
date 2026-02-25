@@ -57,7 +57,7 @@ def _launch_jobs(args: dict, pvc_name) -> None:
     api_instance = api_instance = client.BatchV1Api()
     try:
         all_created_jobs = launcher.create_jobs(api_instance, 1, args["kube_env"]["namespace"], args["job_spec"], args["prefix"], \
-                            args["model_name"], args["model_fun"], pvc_name, model_dir, data_file)
+                            args["suffix"], args["model_name"], args["model_fun"], pvc_name, model_dir, data_file)
     except Exception as e:
         logger.error("Could not launch jobs!".format(e=e))
         raise e

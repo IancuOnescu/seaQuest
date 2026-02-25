@@ -23,6 +23,10 @@ VALIDATION_SCHEMA = {
         "type": "string", 
         "required": True
     },
+    "suffix": {
+        "type": "string", 
+        "required": True
+    },
     "log_file": {
         "type": "string"
     },

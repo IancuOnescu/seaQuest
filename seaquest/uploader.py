@@ -96,7 +96,8 @@ def _copy_files_to_pod(api_instance: client.CoreV1Api, namespace: str, pod_name:
                logger.error(f"STDERR: {resp.read_stderr()}")
                raise RuntimeError(f"Error copying files to pod: {resp.read_stderr()}")
           if read := buf.read(chunk_size):
-               logger.debug(f"Uploading chunk: {read}")
+               #logger.debug(f"Uploading chunk: {read}")
+               logger.debug(f"Uploading chunkof size: {len(read)}")
                resp.write_stdin(read)
           else:
                break
