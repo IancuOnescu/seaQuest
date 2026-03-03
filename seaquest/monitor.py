@@ -51,21 +51,25 @@ def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: clie
         for idx, job in enumerate(job_names):
 
             resp = api_instance_batch.read_namespaced_job_status(name=job, namespace=namespace)
-            if resp.status.completion_time is not None:
-                jobs_done[idx] = True
 
-                stat = "Succeeded" if resp.status.succeeded is not None else "Failed"
-                logger.info("Job {job} has finished with status `{stat}`".format(job=job, stat=stat))
+            if resp.status.succeeded:
+                _pull_files(api_instance_core, namespace, prefix, job, pvc, dest_dir)
+                stat = "Succeeded"
 
-                if stat == "Succeeded":
-                    _pull_files(api_instance_core, namespace, prefix, job, pvc, dest_dir)
+            elif resp.status.failed:
+                stat = "Failed"
 
-                _delete_job(api_instance_batch, namespace, job)
+            elif not resp.status.active or resp.status.active > 0:
+                continue # still initiating or running
+            
+            jobs_done[idx] = True
+            logger.info("Job {job} has finished with status `{stat}`".format(job=job, stat=stat))
+            _delete_job(api_instance_batch, namespace, job)
 
             sleep(1)
 
         if all(jobs_done) == True:
-            logger.info("All jobs are done! Results have been pulled to {dir}".format(dir=str(dest_dir)))
+            logger.info("All jobs are done! Results from successful jobs have been pulled to {dir}".format(dir=str(dest_dir)))
             return
         
         sleep(60)
