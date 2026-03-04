@@ -50,7 +50,16 @@ def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: clie
     while True:
         for idx, job in enumerate(job_names):
 
-            resp = api_instance_batch.read_namespaced_job_status(name=job, namespace=namespace)
+            if jobs_done[idx]:
+                continue
+            
+            resp = None
+            try:
+                resp = api_instance_batch.read_namespaced_job_status(name=job, namespace=namespace)
+            except Exception as e:
+                jobs_done[idx] = True
+                logger.info("Monitoring for job {job} has failed with error: {err}".format(job=job, err=e))
+                continue
 
             if resp.status.succeeded:
                 _pull_files(api_instance_core, namespace, prefix, job, pvc, dest_dir)
