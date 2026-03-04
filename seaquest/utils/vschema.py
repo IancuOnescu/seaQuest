@@ -21,11 +21,12 @@ VALIDATION_SCHEMA = {
     },
     "prefix": {
         "type": "string", 
-        "required": True
+        "required": True,
+        "default": "",
     },
     "suffix": {
-        "type": "string", 
-        "required": True
+        "type": "string",
+        "default": ""
     },
     "log_file": {
         "type": "string"
