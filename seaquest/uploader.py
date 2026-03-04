@@ -127,7 +127,7 @@ def _update_file_dest_name(api_instance: client.CoreV1Api, namespace: str, pod_n
      None
           None"""
 
-     exec_command = ["/bin/sh", "-c", 'mv {o} {n}'.format(o=old_name, n=new_name)]
+     exec_command = ["/bin/sh", "-c", 'cp -R ./{o}/* ./{n} && rm -R ./{o}/*'.format(o=old_name, n=new_name)]
      resp = stream.stream(api_instance.connect_get_namespaced_pod_exec, pod_name, namespace,
                          command=exec_command,
                          stderr=True, stdin=True,
