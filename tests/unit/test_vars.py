@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from kubernetes import client, config
 
 config.load_kube_config()
@@ -15,3 +17,5 @@ pod_name_prefix = "iones-seaquest-test-pod"
 
 pod_wait_timeout = 300 # seconds
 
+config_file_path = Path(Path(__file__).parent.resolve()).joinpath("test_config_nogpu.yaml")
+test_model_dir_path = Path(Path(__file__).parent.resolve()).joinpath("test_model_dir")

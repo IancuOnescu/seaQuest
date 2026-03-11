@@ -18,6 +18,7 @@ def test_make_pod_name_unique():
 
 
 def test_launch_pod_pass():
+    pod_name_tmp = None
     try:
         pod_name_tmp = pod.make_pod_name_unique(api_instance_core, namespace, pod_name_prefix)
         pod._launch_pod(api_instance_core, namespace, pod_name_tmp, pvc_name_prefix)
@@ -29,6 +30,7 @@ def test_launch_pod_pass():
 
 
 def test_launch_temp_pod_fail():
+    pod_name_tmp = None
     try:
         # launching a pod with a non-existing pvc should fail
         pod_name_tmp = pod.make_pod_name_unique(api_instance_core, namespace, pod_name_prefix)
@@ -40,6 +42,7 @@ def test_launch_temp_pod_fail():
 
 
 def test_delete_pod():
+    pod_name_tmp = None
     try:
         pod_name_tmp = pod.make_pod_name_unique(api_instance_core, namespace, pod_name_prefix)
         pod._launch_pod(api_instance_core, namespace, pod_name_tmp, pvc_name_prefix)
@@ -52,6 +55,7 @@ def test_delete_pod():
 
 
 def test_timeout_waiting_for_pod():
+    pod_name_tmp = None
     try:
         pod_name_tmp = pod.make_pod_name_unique(api_instance_core, namespace, pod_name_prefix)
         pod._launch_pod(api_instance_core, namespace, pod_name_tmp, pvc_name_prefix)
