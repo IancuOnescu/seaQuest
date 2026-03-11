@@ -19,3 +19,14 @@ pod_wait_timeout = 300 # seconds
 
 config_file_path = Path(Path(__file__).parent.resolve()).joinpath("test_config_nogpu.yaml")
 test_model_dir_path = Path(Path(__file__).parent.resolve()).joinpath("test_model_dir")
+
+COMPLETE_ARGS = ["-cf", str(config_file_path),
+                  "-md", "/models",
+                  "-mn", "ExampleModel",
+                  "-f", "infer",
+                  "-p", "iones",
+                  "-df", "tests/unit/test_config_nogpu.yaml"]
+
+INCOMPLETE_ARGS_1= ["-md", "/models"]
+INCOMPLETE_ARGS_2= ["-md", "/models", "-cf", str(config_file_path)]
+
