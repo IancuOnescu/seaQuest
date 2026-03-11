@@ -100,10 +100,10 @@ def _pull_files(api_instance: client.CoreV1Api, namespace:str, prefix: str, job_
 
     try:
         _copy_files_from_pod(api_instance, pod_name, namespace, files_path, dest_dir)
+        _delete_pod(api_instance, namespace, pod_name)
     except Exception as e:
+        _delete_pod(api_instance, namespace, pod_name)
         logger.error("Copy files for job {job} has failed with error {err}".format(job=job_name, err=e))
-
-    _delete_pod(api_instance, namespace, pod_name)
 
 
 # https://github.com/prafull01/Kubernetes-Utilities/blob/master/kubectl_cp_as_python_client.py
