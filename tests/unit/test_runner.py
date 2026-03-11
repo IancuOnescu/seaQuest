@@ -1,46 +1,44 @@
-import os
-import pathlib
-import sys
-
 from seaquest import runner
-from seaquest.utils.validate import _parse_args
+from seaquest.utils.validate import _parse_args, _parse_runner_args
+from test_vars import *
 
-# output_dir = pathlib.Path("output_dir")
-output_dir = "output_dir"
-_COMPLETE_ARGS = ["-cf", str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_config_nogpu.yaml")),
-                  "-md", "test_model_dir",
-                  "-mn", "ExampleModel",
-                  "-f", "train",
-                  "-p", "iones",
-                  "-df", "test_weights.txt"]
 
-def test_start_model_no_dir():
-    args = _parse_args(_COMPLETE_ARGS)
+def test_load_model_dir_pass():
+    try:
+        runner._load_model_dir(test_model_dir_path.name)
+    except:
+        assert False, "Model dir failed to load"
+
+
+def test_load_model_dir_fail():
+    try:
+        runner._load_model_dir("nonexistent_path")
+    except:
+        pass
+
+
+def test_load_model_class_pass():
+    try:
+        namespace = runner._load_model_dir(test_model_dir_path.name)
+        runner._load_model_class(namespace, test_model_name)
+    except:
+        assert False, "Model class failed to load"
+
+
+def test_load_model_class_fail():
+    try:
+        runner._load_model_class(None, test_model_name)
+    except:
+        pass
+
+
+def test_main():
+    args = _parse_args(COMPLETE_ARGS.copy())
+    args_runner = _parse_runner_args(runner_arguments)
+
+    args.update(args_runner)
     try:
         runner.main(args)
-    except ValueError as e:
-        assert True
-
-def test_start_model_no_model():
-    args = _parse_args(_COMPLETE_ARGS)
-    try:
-        runner.main(args)
-    except ModuleNotFoundError as e:
-        assert True
-
-def test_start_model_no_fun():
-    args = _parse_args(_COMPLETE_ARGS)
-    try:
-        runner.main(args)
-    except ValueError as e:
-        assert True
-
-def test_start_model_pass():
-    args = _parse_args(_COMPLETE_ARGS)
-    sys.path.append(os.path.join(os.getcwd(), "test_model_dir"))
-
-    try:
-        runner.main(args)
-        assert True
-    except ValueError or ModuleNotFoundError as e:
-        assert False, f"Starting model failed with exception: {e}"
+    except Exception as e:
+        assert False, "Main function from runner failed to run: {e}".format(e=e)
+    

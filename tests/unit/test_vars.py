@@ -20,9 +20,10 @@ pod_wait_timeout = 300 # seconds
 config_file_path = Path(Path(__file__).parent.resolve()).joinpath("test_config_nogpu.yaml")
 test_model_dir_path = Path(Path(__file__).parent.resolve()).joinpath("test_model_dir")
 
+test_model_name = "ExampleModel"
 COMPLETE_ARGS = ["-cf", str(config_file_path),
                   "-md", "test_model_dir",
-                  "-mn", "ExampleModel",
+                  "-mn", test_model_name,
                   "-f", "infer",
                   "-p", "iones",
                   "-df", "test-weights.txt"]
@@ -38,5 +39,12 @@ job_arguments = {
     "-md": "test_model_dir"
 }
 
+runner_arguments = [
+    "-od", "output_dir",
+    "-md", "test_model_dir",
+    "-cf", "tests\\unit\\test_config_nogpu.yaml"
+]
 fun = "infer"
+
+output_dir = "output_dir"
 

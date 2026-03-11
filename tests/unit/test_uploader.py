@@ -91,5 +91,4 @@ def test_clean_up():
     try:
         uploader._delete_pvc(api_instance_core, namespace, pvc_name_prefix)
     except Exception as e:
-        assert False, "Cleanup failed with exception: {e}".format()
-    pass
+        assert False, "Cleanup failed with exception: {e}".format(e=e)
