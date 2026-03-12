@@ -15,12 +15,6 @@ config.load_kube_config()
 logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file__).stem, level="debug")
 
 
-def _delete_pvc(api_instance: client.V1Affinity, pvc: str,) -> None:
-    """"""
-
-    api_instance.delete_persistent_volume(pvc)
-
-
 def _delete_job(api_instance: client.BatchV1Api, namespace: str, job_name: str) -> None:
     """"""
 

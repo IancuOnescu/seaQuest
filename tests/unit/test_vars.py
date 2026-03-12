@@ -47,5 +47,8 @@ runner_arguments = [
 ]
 fun = "infer"
 
+files_path = [(test_model_dir_path, None),
+              (data_file_path, "test_model_dir")]
+
 output_dir = "output_dir"
 
