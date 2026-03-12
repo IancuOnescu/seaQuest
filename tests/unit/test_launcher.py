@@ -1,57 +1,58 @@
-import os
-import pathlib
-
-from kubernetes import client, config
+from time import sleep
 
 from seaquest import launcher, uploader
 from seaquest.monitor import _delete_job
-from seaquest.utils import validate, loggus
-
-logger = loggus.init_logger(__name__)
-
-config.load_kube_config()
-api_instance = client.BatchV1Api()
-
-namespace = "dl4nlpspace"
-prefix = "ionestest"
-fun = "train"
-_COMPLETE_ARGS = ["-cf", os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_config_nogpu.yaml"),
-                  "-md", "test_model_dir",
-                  "-mn", "ExampleModel",
-                  "-f", "train",
-                  "-p", "iones",
-                  "-df", "test_weights.txt"]
-
-output_dir = "iones-seaquest-test-job_output"
-data_file = "test_weights.txt"
-arguments = {
-    "-od": output_dir,
-    "-md": "test_model_dir"
-}
+from seaquest.utils import validate
+from test_vars import *
 
 
 def test_launch_job_fail():
-    args = validate._parse_args(_COMPLETE_ARGS.copy())
+    args = validate._parse_args(COMPLETE_ARGS.copy())
     try:
-        launcher._launch_job(api_instance, "nonexisting-namespace", "iones-seaquest-test-job", args["job_spec"], "ionestest-test-pvc", arguments)
+        launcher._launch_job(api_instance_batch, "hocus-pocus-namespace", test_job_name_prefix, args["job_spec"], pvc_name_prefix, job_arguments)
     except Exception as e:
-        assert True
+        pass
 
 
 def test_launch_job():
-    args = validate._parse_args(_COMPLETE_ARGS.copy())
-    args["output_dir"] = output_dir # workaround
+    args = validate._parse_args(COMPLETE_ARGS.copy())
+    args["output_dir"] = job_output_dir # workaround
     try:
-        uploader.upload_files_to_pvc(namespace, prefix, "test-pvc", [pathlib.Path("P:\\research\\seaQuest\\tests\\unit\\test_model_dir")])
+        # uploader.upload_files_to_pvc(namespace, prefix, pvc_name, [ \
+        #         [test_model_dir_path, None],
+        #         [config_file_path, test_model_dir_path.name]
+        #     ])
         
-        arguments["-od"] = output_dir
-        logger.info(arguments)
-        launcher._launch_job(api_instance, namespace, "iones-seaquest-test-job", args["job_spec"], "ionestest-test-pvc", arguments)
-        #_delete_job(api_instance, namespace, "iones-seaquest-test-job")
+        launcher._launch_job(api_instance_batch, namespace, test_job_name_prefix, args["job_spec"], pvc_name_prefix, job_arguments)
+        _delete_job(api_instance_batch, namespace, test_job_name_prefix)
+        
+        # uploader._delete_pvc(api_instance_core, namespace, pvc_name_prefix)
+        # sleep(5) # for deletion changes to take effect
     except Exception as e:
-        _delete_job(api_instance, namespace, "iones-seaquest-test-job")
+        # uploader._delete_pvc(api_instance_core, namespace, pvc_name_prefix)
+        _delete_job(api_instance_batch, namespace, test_job_name_prefix)
         assert False, "Job launch failed with error {e}".format(e=e)
 
 
-# def test_create_jobs():
-#     pass    
+def test_create_jobs():
+    args = validate._parse_args(COMPLETE_ARGS.copy())
+    args["output_dir"] = job_output_dir # workaround
+    try:
+        uploader.upload_files_to_pvc(namespace, prefix, pvc_name, [ \
+                [test_model_dir_path, None],
+                [config_file_path, test_model_dir_path.name]
+            ])
+        launcher.create_jobs(api_instance_batch, 1, namespace, args["job_spec"], prefix, None, args["model_name"], args["model_fun"], pvc_name_prefix, args["md_dir"], data_file)
+
+        job_name = "{prefix}-{model}-{fun}-{data_file}-job{suffix}-{idx}".format(prefix=prefix, model=args["model_name"], fun=args["model_fun"], idx=0, data_file=data_file, suffix="")
+        job_name = job_name.lower()
+        _delete_job(api_instance_batch, namespace, job_name)
+        uploader._delete_pvc(api_instance_core, namespace, pvc_name_prefix)
+    except Exception as e:
+        uploader._delete_pvc(api_instance_core, namespace, pvc_name_prefix)
+
+        job_name = "{prefix}-{model}-{fun}-{data_file}-job{suffix}-{idx}".format(prefix=prefix, model=args["model_name"], fun=args["model_fun"], idx=0, data_file=data_file, suffix="")
+        job_name = job_name.lower()
+        _delete_job(api_instance_batch, namespace, job_name)
+        assert False, "Job launch failed with error {e}".format(e=e)
+    
