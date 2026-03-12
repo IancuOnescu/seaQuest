@@ -8,9 +8,10 @@ job_spec:
       cpu: 2
 model_keyword_args:
   test_arg: "this is a test"
-data_file: tests/unit/test_config_nogpu.yaml
 model_name: ExampleModel
 model_fun: infer
 prefix: iones
 kube_env:
   namespace: dl4nlpspace
+pvc_params:
+  pvc-name: iones-test-pvc

@@ -8,8 +8,8 @@ class ExampleModel(NautPipelineModel):
 
         self.test_arg = test_arg
 
-    def train(self):
-        with open('./test_weights.txt', 'r') as f:
+    def infer(self):
+        with open('./test-weights.txt', 'r') as f:
             print("Loading weights from test_weights.txt")
 
         with OutputContext(self.output_dir):
@@ -26,6 +26,6 @@ class ExampleModel(NautPipelineModel):
         print("this is the data dir")
         print(self.data_file)
 
-    def infer(self):
-        with open('./test_weights.txt', 'r') as f:
+    def train(self):
+        with open('./test-weights.txt', 'r') as f:
             print("Loading weights from test_weights.txt")

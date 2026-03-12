@@ -15,12 +15,6 @@ config.load_kube_config()
 logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file__).stem, level="debug")
 
 
-def _delete_pvc(api_instance: client.V1Affinity, pvc: str,) -> None:
-    """"""
-
-    api_instance.delete_persistent_volume(pvc)
-
-
 def _delete_job(api_instance: client.BatchV1Api, namespace: str, job_name: str) -> None:
     """"""
 
@@ -100,10 +94,10 @@ def _pull_files(api_instance: client.CoreV1Api, namespace:str, prefix: str, job_
 
     try:
         _copy_files_from_pod(api_instance, pod_name, namespace, files_path, dest_dir)
+        _delete_pod(api_instance, namespace, pod_name)
     except Exception as e:
+        _delete_pod(api_instance, namespace, pod_name)
         logger.error("Copy files for job {job} has failed with error {err}".format(job=job_name, err=e))
-
-    _delete_pod(api_instance, namespace, pod_name)
 
 
 # https://github.com/prafull01/Kubernetes-Utilities/blob/master/kubectl_cp_as_python_client.py

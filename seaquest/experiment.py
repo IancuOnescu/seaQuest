@@ -34,7 +34,7 @@ def _delete_runner_config(path: pathlib.Path) -> None:
 def _upload_files(args: dict) -> None:
     """"""
     pvc_name = args["pvc_params"]["pvc-name"] if "pvc_params" in args \
-            else "seaquest-pvc".format(prefix=args["prefix"])
+            else "seaquest-pvc"
     
     files = [(pathlib.Path(args["md_dir"]).resolve(), None), 
              (pathlib.Path(args["data_file"]).resolve(), pathlib.Path(args["md_dir"]).resolve().name)]
