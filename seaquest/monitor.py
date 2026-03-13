@@ -16,13 +16,40 @@ logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file
 
 
 def _delete_job(api_instance: client.BatchV1Api, namespace: str, job_name: str) -> None:
-    """"""
+    """Delete a job
+    
+    Parameters
+    ----------
+    api_instance: kubernetes client
+        Kubernetes client
+    namespace: str
+        Namespace name
+    job_name: str
+        The name of the job to be deleted
+    Returns
+    -------
+    file_path: pathlib.Path
+        Path to the location where the runner configuration is saved
+    """
 
     api_instance.delete_namespaced_job(name=job_name, namespace=namespace, propagation_policy='Foreground')
 
 
 def _delete_all_jobs(api_instance: client.BatchV1Api, namespace: str, job_names: str) -> None:
-    """"""
+    """Delete all jobs in a list
+
+    Parameters
+    ----------
+    api_instance: kubernetes client
+        Kubernetes client
+    namespace: str
+        Namespace name
+    job_names: list
+        The names of the job to be deleted
+    Returns
+    -------
+    None
+    """
 
     for job in job_names:
         try:
@@ -32,7 +59,28 @@ def _delete_all_jobs(api_instance: client.BatchV1Api, namespace: str, job_names:
 
 
 def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: client.CoreV1Api, namespace: str, job_names: list, pvc: str, dest_dir: pathlib.Path, prefix: str) -> None:
-    """"""
+    """Monitor jobs until they reach a finish state (Succeeded or Failed)
+
+    Parameters
+    ----------
+    api_instance_batch: kubernetes batch client
+        Kubernetes batch client
+    api_instance_core: kubernetes core client
+        Kubernetes core client
+    namespace: str
+        Namespace name
+    job_names: list
+        The names of the job to be deleted
+    pvc: str
+        The name of the PVC
+    dest_dir: str
+        The name of the destination directory
+    prefix: str
+        The prefix
+    Returns
+    -------
+    None
+    """
     
     # Watch and streaming solutions didn't work so we use this for now ): 
     # (this snippet is also present in the official examples)
@@ -79,8 +127,26 @@ def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: clie
 
 
 def _pull_files(api_instance: client.CoreV1Api, namespace:str, prefix: str, job_name:str, pvc: str, dest_dir: str) -> None:
-    """"""
-    
+    """Pull results to a local directory
+
+    Parameters
+    ----------
+    api_instance_core: kubernetes core client
+        Kubernetes core client
+    namespace: str
+        Namespace name
+    prefix: str
+        The prefix
+    job_name: str
+        The name of the job to be deleted
+    pvc: str
+        The name of the PVC
+    dest_dir: str
+        The name of the destination directory
+    Returns
+    -------
+    None
+    """
     logger.info("Pulling output of job {job} ...".format(job=job_name))
 
     pvc_name = "{x}-{y}".format(x=prefix, y=pvc) if prefix else pvc
@@ -102,8 +168,25 @@ def _pull_files(api_instance: client.CoreV1Api, namespace:str, prefix: str, job_
 
 # https://github.com/prafull01/Kubernetes-Utilities/blob/master/kubectl_cp_as_python_client.py
 # They should really make a cp method already ):
-def _copy_files_from_pod(api_instance: client.CoreV1Api, pod_name: str, namespace: str, src_path: pathlib.Path, dest_dir: pathlib.Path):
-    """"""
+def _copy_files_from_pod(api_instance: client.CoreV1Api, pod_name: str, namespace: str, src_path: pathlib.Path, dest_dir: pathlib.Path) -> None:
+    """Copy files to a local directory through a pod
+
+    Parameters
+    ----------
+    api_instance_core: kubernetes core client
+        Kubernetes core client
+    pod_name: str
+        The name of the pod
+    namespace: str
+        Namespace name
+    src_path: pathlib.Path
+        Path on the PVC mount where to copy the files from
+    dest_dir: pathlib.Path
+        The name of the local destination directory where to copy the files to 
+    Returns
+    -------
+    None
+    """
 
     logger.info("Starting to copy files from kube storage through pod {pod}".format(pod=pod_name))
     exec_command = ['tar', 'czf', '-', src_path.as_posix()] # for some reason cd-ing and then tar-ing does not return any std output
@@ -139,7 +222,15 @@ def _copy_files_from_pod(api_instance: client.CoreV1Api, pod_name: str, namespac
 
 
 def _load_config():
-    """"""
+    """Load monitor config
+
+    Parameters
+    ----------
+    None
+    Returns
+    -------
+    None
+    """
     PATH_MAPPING = {
         "linux": "./config",
         "darwin": "Library/Preferences/seaquest",

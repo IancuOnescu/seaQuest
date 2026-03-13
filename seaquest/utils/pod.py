@@ -58,17 +58,16 @@ def _launch_pod(api_instance: client.CoreV1Api, namespace: str, pod_name:str, pv
      ----------
      api_instance: kubernetes client
           Kubernetes client
-     pvc: str
-          Name of pvc to use for data and model storage
      namespace: str
-          Namespace to use for creating pvc
-     prefix: str
-          Prefix to use for naming jobs and other k8s objects
+          Namespace to use for creating pod
+     pod_name: str
+          Name of pod
+     pvc_name: str
+          Name of pvc to bind the pod to
 
      Returns
      -------
-     str
-          Name of the launched pod
+     None
      """
 
      body = client.V1Pod(
@@ -125,10 +124,14 @@ def _is_running(api_instance: client.CoreV1Api, pod_name: str, namespace: str, t
 
      Parameters
      ----------
+     api_instance: kubernetes client
+          Kubernetes client
      pod_name: str
           Name of the pod to check
      namespace: str
           Namespace to use for creating pvc
+     timeout: int
+          Time to wait for pod to reach running state until raising error 
 
      Returns
      -------
@@ -157,11 +160,13 @@ def _wait_for_running_state(api_instance: client.CoreV1Api, namespace: str, pod_
      ----------
      api_instance: kubernetes client
           Kubernetes client
-     pod_name: str
-          Name of the pod to check
      namespace: str
           Namespace to use for creating pvc
-
+     pod_name: str
+          Name of the pod to check
+     timeout:
+          Time to wait for pod to reach running state until raising error      
+     
      Returns
      -------
      bool

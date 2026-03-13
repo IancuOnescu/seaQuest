@@ -51,6 +51,7 @@ def parse_and_validate_args(argv) -> dict:
 def _validate(args: dict) -> bool:
      """validate the parsed arguments
      Check if all the mandatory arguments are provided
+     
      Parameters
      ----------
      args: dict

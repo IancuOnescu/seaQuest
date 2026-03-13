@@ -12,8 +12,17 @@ logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file
 
 
 def _load_model_dir(model_dir):
-    """"""
+    """Load model directory
 
+    Parameters
+    ----------
+    model_dir: str
+        The name of the model directory
+    Returns
+    -------
+    namespace: str
+        The name of the namespace where the model can be loaded from
+    """
     logger.info("Attempting to load model directory ...")
     try:
         namespace = import_module(model_dir)
@@ -25,7 +34,19 @@ def _load_model_dir(model_dir):
 
 
 def _load_model_class(namespace, model_name):
-    """"""
+    """Loads the model class that instantiates a model object
+
+    Parameters
+    ----------
+    namespace: str
+        The namespace that holds the model
+    model_name: str
+        The name of the model
+    Returns
+    -------
+    model: class
+        The model class that instantiates a model object
+    """
 
     logger.info("Attempting to load model class ...")
     subpackages = [name for _, name, _ in list(pkgutil.iter_modules(
