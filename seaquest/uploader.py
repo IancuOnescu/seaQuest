@@ -13,9 +13,21 @@ logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file
 
 
 def _check_pvc_exists(api_instance: client.CoreV1Api, namespace: str, pvc_name: str):
-     """
-     """
+     """Create a persistent volume claim (pvc) if it does not exist
 
+     Parameters
+     ----------
+     api_instance: kubernetes client
+          Kubernetes client
+     namespace: str
+          Kubernetes Namespace
+     pvc_name: str
+          Name used in the creation of the pvc
+     Returns
+     -------
+     Bool
+          Wether the PVC exists or not
+     """
      pvcs = api_instance.list_namespaced_persistent_volume_claim(namespace=namespace)
      for pvc in pvcs.items:
           if pvc.metadata.name == pvc_name:
@@ -64,6 +76,22 @@ def _create_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -
 
 
 def _delete_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -> None:
+     """Delete a persistent volume claim (pvc) if it exists
+
+     Parameters
+     ----------
+     api_instance: kubernetes client
+          Kubernetes client
+     namespace: str
+          Kubernetes Namespace
+     pvc_name: str
+          Name used of the pvc to delete
+     Returns
+     -------
+     None
+          None
+     """
+
      # check if pvc already exists
      if not _check_pvc_exists(api_instance, namespace, pvc_name):
           logger.info(f"PVC {pvc_name} not found in namespace {namespace}. Skipping deletion.")
