@@ -1,0 +1,91 @@
+<svg width="1280" height="400" viewBox="0 0 1280 400" xmlns="http://www.w3.org/2000/svg">
+
+<defs>
+  <!-- Wave line gradient -->
+  <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#38bdf8"/>
+    <stop offset="100%" stop-color="#22d3ee"/>
+  </linearGradient>
+
+  <!-- Glow for cluster nodes -->
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="6" result="blur"/>
+    <feMerge>
+      <feMergeNode in="blur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+
+  <!-- Submarine light (right side) -->
+  <radialGradient id="light" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+    <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.8"/>
+    <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+
+<!-- Single ocean line (raised) -->
+<path d="M0 220 C320 200 640 200 1280 220" stroke="url(#waveGrad)" stroke-width="6" fill="none"/>
+
+<!-- ML Cluster Graph (centered) -->
+<g stroke="#7dd3fc" stroke-width="4" opacity="0.8">
+  <line x1="540" y1="130" x2="640" y2="100"/>
+  <line x1="640" y1="100" x2="740" y2="150"/>
+  <line x1="740" y1="150" x2="840" y2="120"/>
+  <line x1="640" y1="100" x2="740" y2="210"/>
+  <line x1="740" y1="210" x2="840" y2="170"/>
+</g>
+
+<g fill="#22d3ee" filter="url(#glow)">
+  <circle cx="540" cy="130" r="12"/>
+  <circle cx="640" cy="100" r="12"/>
+  <circle cx="740" cy="150" r="12"/>
+  <circle cx="840" cy="120" r="12"/>
+  <circle cx="740" cy="210" r="12"/>
+  <circle cx="840" cy="170" r="12"/>
+</g>
+
+<!-- Submarine (centered) -->
+<g transform="translate(760,190)">
+  <!-- Light beam to the right -->
+  <path d="M170 21 L350 0 L350 80 Z" fill="url(#light)" opacity="0.6"/>
+
+  <!-- body -->
+  <rect x="0" y="0" width="190" height="48" rx="24" fill="#facc15"/>
+  <!-- tower -->
+  <rect x="70" y="-28" width="40" height="28" rx="6" fill="#facc15"/>
+  <!-- windows -->
+  <circle cx="45" cy="24" r="9" fill="#0ea5e9"/>
+  <circle cx="85" cy="24" r="9" fill="#0ea5e9"/>
+  <circle cx="125" cy="24" r="9" fill="#0ea5e9"/>
+  <!-- propeller -->
+  <circle cx="190" cy="24" r="7" fill="#eab308"/>
+  <!-- periscope -->
+  <rect x="83" y="-42" width="7" height="14" fill="#eab308"/>
+</g>
+
+<!-- Bubbles near submarine -->
+<g fill="#7dd3fc" opacity="0.7">
+  <circle cx="800" cy="170" r="6"/>
+  <circle cx="820" cy="155" r="5"/>
+  <circle cx="840" cy="135" r="4"/>
+</g>
+
+<!-- Text in lower left -->
+<text x="100" y="350"
+text-anchor="start"
+font-size="48"
+font-family="Inter,Segoe UI,Arial"
+font-weight="700"
+fill="white">
+SeaQuest
+</text>
+
+<text x="100" y="380"
+text-anchor="start"
+font-size="20"
+font-family="Inter,Segoe UI,Arial"
+fill="#bae6fd">
+Kubernetes ML Experiment Automation
+</text>
+
+</svg>
