@@ -10,6 +10,17 @@ logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file
 
 
 def _prepare_afinity(job_config: dict) -> client.V1Affinity:
+    """create the affinity object for the k8s job
+
+    Parameters
+    ----------
+    job_config: dict
+        Dictionary of parsed job configuration arguments
+    Returns
+    -------
+    affinity: client.V1Affinity
+        kubernetes affinity object
+    """
     return client.V1Affinity( # TODO: make this configurable
                 node_affinity=client.V1NodeAffinity(
                     required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
@@ -26,6 +37,21 @@ def _prepare_afinity(job_config: dict) -> client.V1Affinity:
 
 
 def _prepare_containers(config: dict, job_name: str, pvc: str, arguments: dict) -> list[client.V1Container]:
+    """create the container objects for the k8s job
+
+    Parameters
+    ----------
+    config: dict
+        Dictionary of parsed job configuration arguments
+    job_name: str
+        The name of the job
+    arguments: dict
+        A list of arguments to pass to the runner module that will run inside the job
+    Returns
+    -------
+    containers:  list[client.V1Container]
+        list of kubernetes container objects
+    """
     output_dir_name = arguments["-od"]
     requirements_path = str(pathlib.PurePosixPath(arguments["-md"]).joinpath("requirements.txt"))
 
@@ -68,13 +94,41 @@ def _prepare_containers(config: dict, job_name: str, pvc: str, arguments: dict) 
 
 
 def _prepare_volumes(pvc: str) -> list[client.V1Volume]:
+    """create the volume objects for the k8s job
+
+    Parameters
+    ----------
+    pvc: str
+        Name of the PVC
+    Returns
+    -------
+    volumes: list[client.V1Volume]
+        List of kubernetes volume objects to mount to the job
+    """
     return [client.V1Volume(
                 name=pvc,
                 persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(pvc)
             )]
 
 
-def _prepare_job_spec(job_config: dict, job_name: str, pvc: str, arguments: dict) -> client.V1JobStatus:
+def _prepare_job_spec(job_config: dict, job_name: str, pvc: str, arguments: dict) -> client.V1JobSpec:
+    """create the specification for the k8s job
+
+    Parameters
+    ----------
+    job_config: dict
+        Dictionary of job configuration parameters
+    job_name: str
+        Name of the job
+    pvc: str
+        Name of the PVC
+    arguments: dict
+        List of arguments to pass to the runner module that runs inside the job
+    Returns
+    -------
+    status: client.V1JobStatus
+        Kubernetes job spec object
+    """
     return client.V1JobSpec(
         backoff_limit=0, # TODO: make this configurable?
         # ttl_seconds_after_finished = 0, : # TODO: make this configurable
@@ -89,7 +143,27 @@ def _prepare_job_spec(job_config: dict, job_name: str, pvc: str, arguments: dict
     )
 
 
-def _launch_job(api_instance: client.BatchV1Api, namespace: str, job_name:str, job_config: dict, pvc: str, arguments: dict) -> str:
+def _launch_job(api_instance: client.BatchV1Api, namespace: str, job_name:str, job_config: dict, pvc: str, arguments: dict) -> None:
+    """launches a kubernetes job based on the provided configuration 
+
+    Parameters
+    ----------
+    api_instance: kubernetes client
+        Kubernetes client
+    namespace: str
+        Kubernetes namespace
+    job_name: str
+        Name of the job
+    job_config: dict
+        Dictionary of job configuration parameters
+    pvc: str
+        Name of the PVC
+    arguments: dict
+        List of arguments to pass to the runner module that runs inside the job
+    Returns
+    -------
+    None
+    """
     logger.info("Launching job {job} ...".format(job=job_name))
     
     body = client.V1Job(
@@ -105,9 +179,41 @@ def _launch_job(api_instance: client.BatchV1Api, namespace: str, job_name:str, j
 
 
 def create_jobs(api_instance: client.BatchV1Api, num_jobs: int, namespace: str, job_config: dict, prefix: str, suffix: str, model_name:str, model_fun: str, pvc: str, model_dir: str, data_file: str) -> list:
+    """Launches 'num_jobs' kubernetes jobs based on the specified configuration using a unique naming assignment formed of the model name and the data file 
+
+    Parameters
+    ----------
+    api_instance: kubernetes client
+        Kubernetes client
+    num_jobs: int
+        Number of jobs to launch
+    namespace: str
+        Kubernetes namespace
+    job_config: dict
+        Dictionary of job configuration parameters
+    prefix: str
+        Prefix for the job name
+    suffix: str
+        Suffix for the job name
+    model_name: str
+        Name of the model to experiment with
+    model_fun: str
+        Name of the function called (either 'train' or 'infer')
+    pvc: str
+        Name of the PVC
+    model_dir: str
+        Name of the model directory
+    data_file: str
+        Name of the data file
+    Returns
+    -------
+    all_created_jobs: list
+        A list of names of the succesfully launched jobs
+    """
     all_created_jobs = []
     for idx in range(num_jobs):
-        job_name = "{prefix}-{model}-{fun}-{data_file}-job-{suffix}-{idx}".format(prefix=prefix, model=model_name, fun=model_fun[:3], idx=idx, data_file=data_file, suffix=suffix)
+        job_name = "{prefix}-{model}-{fun}-{data_file}-job{suffix}-{idx}".format(prefix=prefix, model=model_name, fun=model_fun, idx=idx, data_file=data_file, suffix="" if suffix is None else "-{s}".format(s=suffix))
+        # job_name = "{prefix}-{model}-{fun}-{data_file}-job-{idx}".format(prefix=prefix, model=model_name, fun=model_fun, idx=idx, data_file=data_file)
         job_name = job_name.lower() # kube convention
 
         arguments = {

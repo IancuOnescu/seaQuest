@@ -6,6 +6,12 @@ job_spec:
     requests:
       memory: 64G
       cpu: 2
-output_dir: output_dir
 model_keyword_args:
   test_arg: "this is a test"
+model_name: ExampleModel
+model_fun: infer
+prefix: iones
+kube_env:
+  namespace: dl4nlpspace
+pvc_params:
+  pvc-name: iones-test-pvc

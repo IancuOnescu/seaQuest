@@ -12,45 +12,103 @@ from .utils.loggus import init_logger
 logger = init_logger(__name__ if __name__ != "__main__" else pathlib.Path(__file__).stem, level="debug")
 
 
-def _create_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -> None:
-    """Create a persistent volume claim (pvc) if it does not exist
-    
-    Parameters
-    ----------
+def _check_pvc_exists(api_instance: client.CoreV1Api, namespace: str, pvc_name: str):
+     """Create a persistent volume claim (pvc) if it does not exist
+
+     Parameters
+     ----------
      api_instance: kubernetes client
           Kubernetes client
      namespace: str
           Kubernetes Namespace
      pvc_name: str
           Name used in the creation of the pvc
-    
-    Returns
-    -------
-    None
-         None
-    """
-    # check if pvc already exists
-    pvcs = api_instance.list_namespaced_persistent_volume_claim(namespace=namespace)
-    for pvc in pvcs.items:
-        if pvc.metadata.name == pvc_name:
-            logger.info(f"PVC {pvc_name} already exists in namespace {namespace}. Skipping creation.")
-            return
+     Returns
+     -------
+     Bool
+          Wether the PVC exists or not
+     """
+     pvcs = api_instance.list_namespaced_persistent_volume_claim(namespace=namespace)
+     for pvc in pvcs.items:
+          if pvc.metadata.name == pvc_name:
+               return True
+          
+     return False
+
+
+def _create_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -> None:
+     """Create a persistent volume claim (pvc) if it does not exist
+
+     Parameters
+     ----------
+     api_instance: kubernetes client
+          Kubernetes client
+     namespace: str
+          Kubernetes Namespace
+     pvc_name: str
+          Name used in the creation of the pvc
+
+     Returns
+     -------
+     None
+          None
+     """
+     if _check_pvc_exists(api_instance, namespace, pvc_name):
+         logger.info(f"PVC {pvc_name} already exists in namespace {namespace}. Skipping creation.")
+         return
         
-    # create pvc
-    logger.info("Creating PVC {pvc} in namespace {namespace}.".format(pvc=pvc_name, namespace=namespace))
+     # create pvc
+     logger.info("Creating PVC {pvc} in namespace {namespace}.".format(pvc=pvc_name, namespace=namespace))
 
-    body = client.V1PersistentVolume(
-        api_version="v1",
-        kind="PersistentVolumeClaim",
-        metadata=client.V1ObjectMeta(name=pvc, namespace=namespace),
-        spec=client.V1PersistentVolumeClaimSpec(
-            access_modes=["ReadWriteMany"],
-            resources=client.V1ResourceRequirements(requests={"storage": "100Gi"}), #TODO: make this configurable
-            storage_class_name="rook-cephfs", #TODO: make this configurable
-        )
-    )
-    api_instance.create_namespaced_persistent_volume_claim(namespace=namespace, body=body)
+     body = client.V1PersistentVolume(
+          api_version="v1",
+          kind="PersistentVolumeClaim",
+          metadata=client.V1ObjectMeta(name=pvc_name, namespace=namespace),
+          spec=client.V1PersistentVolumeClaimSpec(
+               access_modes=["ReadWriteMany"],
+               resources=client.V1ResourceRequirements(requests={"storage": "100Gi"}), #TODO: make this configurable
+               storage_class_name="rook-cephfs", #TODO: make this configurable
+          )
+     )
+     api_instance.create_namespaced_persistent_volume_claim(namespace=namespace, body=body)
 
+     logger.info("PVC {pvc} successfully created in namespace {namespace}".format(pvc=pvc_name, namespace=namespace))
+
+
+def _delete_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -> None:
+     """Delete a persistent volume claim (pvc) if it exists
+
+     Parameters
+     ----------
+     api_instance: kubernetes client
+          Kubernetes client
+     namespace: str
+          Kubernetes Namespace
+     pvc_name: str
+          Name used of the pvc to delete
+     Returns
+     -------
+     None
+          None
+     """
+
+     # check if pvc already exists
+     if not _check_pvc_exists(api_instance, namespace, pvc_name):
+          logger.info(f"PVC {pvc_name} not found in namespace {namespace}. Skipping deletion.")
+          return
+     
+     try:
+          api_response = api_instance.delete_namespaced_persistent_volume_claim(
+               name=pvc_name,
+               namespace=namespace,
+               body=client.V1DeleteOptions(
+                    propagation_policy='Foreground',
+               )
+          )
+          logger.info(f"PVC '{pvc_name}' deleted successfully.")
+     except Exception as e:
+          logger.error("Error encountered when deleting pvc {e}".format(e=e))
+          
 
 # taken from https://github.com/kubernetes-client/python/issues/476
 # I don't know why there isn't a built-in function for this yet
@@ -127,7 +185,7 @@ def _update_file_dest_name(api_instance: client.CoreV1Api, namespace: str, pod_n
      None
           None"""
 
-     exec_command = ["/bin/sh", "-c", 'mv {o} {n}'.format(o=old_name, n=new_name)]
+     exec_command = ["/bin/sh", "-c", 'cp -R ./{o}/* ./{n} && rm -R ./{o}/*'.format(o=old_name, n=new_name)]
      resp = stream.stream(api_instance.connect_get_namespaced_pod_exec, pod_name, namespace,
                          command=exec_command,
                          stderr=True, stdin=True,

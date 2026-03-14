@@ -13,7 +13,17 @@ logger = loggus.init_logger(__name__ if __name__ != "__main__" else pathlib.Path
 
 
 def _generate_runner_config(args: dict) -> pathlib.Path:
-    """"""
+    """generate and save the runner config file
+    
+    Parameters
+    ----------
+    args: dict
+        Dictionary of parsed arguments
+    Returns
+    -------
+    file_path: pathlib.Path
+        Path to the location where the runner configuration is saved
+    """
     dir = pathlib.Path(args["md_dir"]).resolve()
 
     file_path = dir / "runner.yaml"
@@ -27,14 +37,32 @@ def _generate_runner_config(args: dict) -> pathlib.Path:
 
 
 def _delete_runner_config(path: pathlib.Path) -> None:
-    """"""
+    """remove the generated runner config file
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        Path to the location where the runner configuration is saved
+    Returns
+    -------
+    None
+    """
     os.remove(path)
 
 
 def _upload_files(args: dict) -> None:
-    """"""
+    """upload the model directory and the data file to the PVC.
+
+    Parameters
+    ----------
+    args: dict
+        Dictionary of parsed arguments
+    Returns
+    -------
+    None
+    """
     pvc_name = args["pvc_params"]["pvc-name"] if "pvc_params" in args \
-            else "seaquest-pvc".format(prefix=args["prefix"])
+            else "seaquest-pvc"
     
     files = [(pathlib.Path(args["md_dir"]).resolve(), None), 
              (pathlib.Path(args["data_file"]).resolve(), pathlib.Path(args["md_dir"]).resolve().name)]
@@ -49,8 +77,19 @@ def _upload_files(args: dict) -> None:
     return pvc_name
 
 
-def _launch_jobs(args: dict, pvc_name) -> None:
-    """"""
+def _launch_jobs(args: dict, pvc_name: str) -> None:
+    """launch the experimental jobs
+
+    Parameters
+    ----------
+    args: dict
+        Dictionary of parsed arguments
+    pvc_name: str
+        Name of PVC to mount
+    Returns
+    -------
+    None
+    """
     data_file = pathlib.Path(args["data_file"]).stem
     model_dir = "_".join([pathlib.Path(args["md_dir"]).name, data_file])
 
@@ -65,8 +104,17 @@ def _launch_jobs(args: dict, pvc_name) -> None:
     return all_created_jobs
 
 
-def _save_config_and_jobs(args: dict) -> pathlib.Path:
-    """"""
+def _save_config_and_jobs(args: dict) -> None:
+    """save a file containing the names of the launched jobs to feed to the monitor module
+
+    Parameters
+    ----------
+    args: dict
+        Dictionary of parsed arguments
+    Returns
+    -------
+    None
+    """
     PATH_MAPPING = {
         "linux": "./config",
         "darwin": "Library/Preferences/seaquest",
@@ -82,6 +130,16 @@ def _save_config_and_jobs(args: dict) -> pathlib.Path:
 
 
 def main(argv):
+    """parse arguments, create a runner config, upload the model and data, launch the jobs save the names of the launched jobs.
+
+    Parameters
+    ----------
+    argv: list
+        List of arguments passed to the module
+    Returns
+    -------
+    None
+    """
     args = validate.parse_and_validate_args(argv)
     logger.info("Arguments parsed and validated succesfully!")
 
