@@ -170,5 +170,5 @@ def _wait_for_running_state(api_instance: client.CoreV1Api, namespace: str, pod_
      try:
           _is_running(api_instance, pod_name, namespace, timeout)
      except TimeoutError:
-          logger.error("Timeout error: Pod {pod} failed to start".format(pod=pod_name))
+          logger.error("Timeout error: Pod {pod} failed to start in {t} seconds".format(pod=pod_name, t=timeout))
           raise TimeoutError(f"Pod {pod_name} failed to start.")
