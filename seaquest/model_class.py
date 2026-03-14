@@ -4,7 +4,8 @@ import pathlib
 
 
 class OutputContext:
-    """"""
+    """Class that handles the context switch for saving output files on the PVC"""
+
     def __init__(self, output_dir: pathlib.Path):
         self.output_dir = output_dir
 
@@ -21,7 +22,7 @@ class OutputContext:
 
 
 class NautPipelineModel(ABC):
-    """"""
+    """Base class to be inherited by all models to ensure minimum required constructor arguments and methods"""
     def __init__(self, output_dir: pathlib.Path, data_file: pathlib.Path):
         super().__init__()
 

@@ -28,7 +28,11 @@ def _check_pvc_exists(api_instance: client.CoreV1Api, namespace: str, pvc_name: 
      Bool
           Wether the PVC exists or not
      """
-     pvcs = api_instance.list_namespaced_persistent_volume_claim(namespace=namespace)
+     try:
+          pvcs = api_instance.list_namespaced_persistent_volume_claim(namespace=namespace)
+     except Exception as e:
+          logger.error("Could not list pvcs in namespace {n}. Erorr: {e}".format(n=namespace, e=e))
+          raise e
      for pvc in pvcs.items:
           if pvc.metadata.name == pvc_name:
                return True
@@ -98,7 +102,7 @@ def _delete_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -
           return
      
      try:
-          api_response = api_instance.delete_namespaced_persistent_volume_claim(
+          _ = api_instance.delete_namespaced_persistent_volume_claim(
                name=pvc_name,
                namespace=namespace,
                body=client.V1DeleteOptions(
@@ -107,7 +111,7 @@ def _delete_pvc(api_instance: client.CoreV1Api, namespace: str, pvc_name: str) -
           )
           logger.info(f"PVC '{pvc_name}' deleted successfully.")
      except Exception as e:
-          logger.error("Error encountered when deleting pvc {e}".format(e=e))
+          logger.error("Could not delete PVC {pvc_name}. Please delete manually! Error: {e}".format(pvc_name=pvc_name, e=e))
           
 
 # taken from https://github.com/kubernetes-client/python/issues/476

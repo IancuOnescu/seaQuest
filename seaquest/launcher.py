@@ -213,7 +213,6 @@ def create_jobs(api_instance: client.BatchV1Api, num_jobs: int, namespace: str, 
     all_created_jobs = []
     for idx in range(num_jobs):
         job_name = "{prefix}-{model}-{fun}-{data_file}-job{suffix}-{idx}".format(prefix=prefix, model=model_name, fun=model_fun, idx=idx, data_file=data_file, suffix="" if suffix is None else "-{s}".format(s=suffix))
-        # job_name = "{prefix}-{model}-{fun}-{data_file}-job-{idx}".format(prefix=prefix, model=model_name, fun=model_fun, idx=idx, data_file=data_file)
         job_name = job_name.lower() # kube convention
 
         arguments = {

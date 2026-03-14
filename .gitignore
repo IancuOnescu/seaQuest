@@ -209,6 +209,5 @@ __marimo__/
 *.logs
 
 tests/unit/outputs/*
+docs/docs/*
 
-docs/docs/html/*
-docs/docs/doctrees/*
