@@ -54,8 +54,8 @@ def _delete_all_jobs(api_instance: client.BatchV1Api, namespace: str, job_names:
     for job in job_names:
         try:
             _delete_job(api_instance, namespace, job)
-        except:
-            logger.error("Couldn't delete job {job}, please delete it manually!".format(job=job))
+        except Exception as e:
+            logger.error("Couldn't delete job {job}, please delete it manually! Error: {e}".format(job=job, e=e))
 
 
 def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: client.CoreV1Api, namespace: str, job_names: list, pvc: str, dest_dir: pathlib.Path, prefix: str) -> None:
@@ -85,7 +85,7 @@ def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: clie
     # Watch and streaming solutions didn't work so we use this for now ): 
     # (this snippet is also present in the official examples)
     logger.info("Started monitoring jobs!")
-    logger.debug("Monitored jobs: {jobs}".format(jobs=" ".join(job_names)))
+    logger.info("Monitored jobs: {jobs}".format(jobs=" ".join(job_names)))
 
     jobs_done = [False] * len(job_names)
 
@@ -104,7 +104,10 @@ def _monitor_jobs(api_instance_batch: client.BatchV1Api, api_instance_core: clie
                 continue
 
             if resp.status.succeeded:
-                _pull_files(api_instance_core, namespace, prefix, job, pvc, dest_dir)
+                try:
+                    _pull_files(api_instance_core, namespace, prefix, job, pvc, dest_dir)
+                except Exception as e:
+                    logger.error("Couldn't pull files for job {job}. Skipping. Error: {e}".format(job=job, e=e))
                 stat = "Succeeded"
 
             elif resp.status.failed:
@@ -164,6 +167,7 @@ def _pull_files(api_instance: client.CoreV1Api, namespace:str, prefix: str, job_
     except Exception as e:
         _delete_pod(api_instance, namespace, pod_name)
         logger.error("Copy files for job {job} has failed with error {err}".format(job=job_name, err=e))
+        raise e
 
 
 # https://github.com/prafull01/Kubernetes-Utilities/blob/master/kubectl_cp_as_python_client.py
@@ -247,20 +251,28 @@ def _load_config():
     return args
 
 
-if __name__ == "__main__":
+def main(argv):
     # check system arguments
-    passed_args = _parse_monitor_args(sys.argv)
+    passed_args = _parse_monitor_args(argv)
     dest_dir = pathlib.Path(passed_args["dest_dir"]).resolve()
 
-    # load config file from default location if not specified
-    if "config_file" not in passed_args:
-        saved_args = _load_config()
-    else:
-        with open(passed_args["config_file"], "r") as file:
-            saved_args = safe_load(file)
+    try:
+        # load config file from default location if not specified
+        if "config_file" not in passed_args:
+            saved_args = _load_config()
+        else:
+            with open(passed_args["config_file"], "r") as file:
+                saved_args = safe_load(file)
+    except Exception as e:
+        logger.error("Could not load config file! Error {e}".format(e=e))
+        raise e
 
     # if config file found run start monitoring jobs
     api_instance_batch = client.BatchV1Api()
     api_instance_core = client.CoreV1Api()
 
     _monitor_jobs(api_instance_batch, api_instance_core, saved_args["kube_env"]["namespace"], saved_args["launched_jobs"], saved_args["pvc_params"]["pvc-name"], dest_dir, saved_args["prefix"])
+
+
+if __name__ == "__main__":
+    main(sys.argv)

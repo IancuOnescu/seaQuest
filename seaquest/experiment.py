@@ -24,14 +24,19 @@ def _generate_runner_config(args: dict) -> pathlib.Path:
     file_path: pathlib.Path
         Path to the location where the runner configuration is saved
     """
-    dir = pathlib.Path(args["md_dir"]).resolve()
 
-    file_path = dir / "runner.yaml"
-    args_cp = args.copy()
-    args_cp["md_dir"] = "_".join([dir.name, pathlib.Path(args["data_file"]).stem])
-    args_cp["data_file"] = pathlib.Path(args["data_file"]).name
-    with open(file_path, "w") as file:
-        safe_dump(args_cp, file)
+    try: 
+        dir = pathlib.Path(args["md_dir"]).resolve()
+
+        file_path = dir / "runner.yaml"
+        args_cp = args.copy()
+        args_cp["md_dir"] = "_".join([dir.name, pathlib.Path(args["data_file"]).stem])
+        args_cp["data_file"] = pathlib.Path(args["data_file"]).name
+        with open(file_path, "w") as file:
+            safe_dump(args_cp, file)
+    except Exception as e:
+        logger.error("Could not generate runner config, aborting! Error: {e}".format(e=e))
+        raise e
 
     return file_path
 
@@ -121,12 +126,15 @@ def _save_config_and_jobs(args: dict) -> None:
         "win32": "AppData/Local/seaquest",
     }
 
-    file_path = pathlib.Path(pathlib.Path.home()).joinpath(PATH_MAPPING[str(sys.platform).lower()]) 
-    file_path.mkdir(parents=True, exist_ok=True)
-    file_path = file_path / "seaquest.yaml" 
-    
-    with open(file_path, "w") as file:
-        safe_dump(args, file)
+    try:
+        file_path = pathlib.Path(pathlib.Path.home()).joinpath(PATH_MAPPING[str(sys.platform).lower()]) 
+        file_path.mkdir(parents=True, exist_ok=True)
+        file_path = file_path / "seaquest.yaml" 
+        
+        with open(file_path, "w") as file:
+            safe_dump(args, file)
+    except Exception as e:
+        logger.warning("Could not save monitor config file and created jobs names. Error: {e}".format(e=e))
 
 
 def main(argv):
@@ -143,13 +151,12 @@ def main(argv):
     args = validate.parse_and_validate_args(argv)
     logger.info("Arguments parsed and validated succesfully!")
 
+    # generate the runner config and save it in the model directory so we upload everything at once
     rc_path = _generate_runner_config(args)
     pvc_name = _upload_files(args)
     _delete_runner_config(rc_path)
 
     all_created_jobs = _launch_jobs(args, pvc_name)
-
-    all_created_jobs = ["iones-llama3infer-infer-job-0"]
 
     # save the output to a file: config used and jobs
     args["launched_jobs"] = all_created_jobs
